@@ -1,0 +1,713 @@
+* Config                                                           :noexport:
+#+PROPERTY: header-args :tangle init.el
+* Emacs, the One True Editor
+#+begin_src emacs-lisp
+;; "Emacs outshines all other editing software in approximately the
+;; same way that the noonday sun does the stars. It is not just bigger
+;; and brighter; it simply makes everything else vanish."
+;;
+;;          - Neal Stephenson, "In the Beginning was the Command Line"
+#+end_src
+
+* init.el dev helpers
+
+#+begin_src emacs-lisp
+  (defun reload-init-file ()
+    "Reload the Emacs init file."
+    (interactive)
+    (load-file "~/.emacs.d/init.el"))
+
+  (global-set-key (kbd "C-c C-x C-r") 'reload-init-file)
+
+  ;; This block creates a key binding to wrap a block of code in org mode source code block tags
+  (defvar my/org-last-src-lang "emacs-lisp"
+    "Store the last used language for org source blocks.")
+
+  (defun my/org-insert-or-wrap-src-block ()
+    "Insert a new src block or wrap existing region in src block, with language prompt."
+    (interactive)
+    (let* ((completion-ignore-case t)
+           (lang (completing-read (format "Language (%s): " my/org-last-src-lang)
+                                  (mapcar #'car org-babel-load-languages)
+                                  nil t nil nil my/org-last-src-lang))
+           (final-lang (if (string-empty-p lang) my/org-last-src-lang lang))
+           (src-block (concat "#+begin_src " final-lang "\n"
+                              (when (use-region-p)
+                                (buffer-substring-no-properties (region-beginning) (region-end)))
+                              "\n#+end_src\n")))
+      (if (use-region-p)
+          (delete-region (region-beginning) (region-end)))
+      (insert src-block)
+      (setq my/org-last-src-lang final-lang)
+      (when (use-region-p)
+        (forward-line -2))))
+
+  (with-eval-after-load 'org
+    (define-key org-mode-map (kbd "C-c C-x C-s") 'my/org-insert-or-wrap-src-block))
+#+end_src
+
+* Basic/Global Settings
+#+begin_src emacs-lisp
+(setq inhibit-startup-message t)
+(menu-bar-mode -1)  ; Disables the menu bar
+(tool-bar-mode -1)  ; Disables the tool bar
+(blink-cursor-mode -1)  ; Disables the blinking cursor
+(scroll-bar-mode -1) ; Disables the scroll bar
+(defalias 'yes-or-no-p 'y-or-n-p) ; y/n >= yes/no
+
+;; Highlight matching parentheses when the point is on them.
+(show-paren-mode 1)
+
+;; ffap: aka most annoying feature ever. This flag enforces C-u prefix
+;; so that I may never ever feel its affects. For the love of all that
+;; is holy, even the docs know it sucks: M-x describe-variable
+;; ffap-require-prefix says "Experts may prefer to disable ffap most
+;; of the time." Consider me an expert.
+(setq ffap-require-prefix t)
+
+;; almost always coding, almost always want column numbers...
+(setq column-number-mode t)
+
+;; Font size keybinding
+(define-key global-map (kbd "C-+") 'text-scale-increase)
+(define-key global-map (kbd "C--") 'text-scale-decrease)
+
+;; Use regex searches by default.
+(global-set-key (kbd "C-s") 'isearch-forward-regexp)
+(global-set-key (kbd "\C-r") 'isearch-backward-regexp)
+(global-set-key (kbd "C-M-s") 'isearch-forward)
+(global-set-key (kbd "C-M-r") 'isearch-backward)
+
+;; Transparently open compressed files
+(auto-compression-mode t)
+
+;; use ctrl-x,c,v for cut,copy,paste, ctrl-z for undo
+(cua-mode t)
+
+;; ibuffer > buffer manager
+(global-set-key (kbd "C-x C-b") 'ibuffer)
+
+;; allow lines to be moved up and down like org-mode does it
+(defun my/move-line (n)
+  "Move the current line up or down by N lines."
+  (let ((col (current-column)))
+    (beginning-of-line)
+    (when (or (> n 0) (not (bobp))) ; Check if not beginning of buffer when moving up
+      (forward-line 1)
+      (transpose-lines n))
+    (forward-line -1)
+    (forward-char col)))
+
+(defun my/move-line-up ()
+  "Move the current line up."
+  (interactive)
+  (my/move-line -1))
+
+(defun my/move-line-down ()
+  "Move the current line down."
+  (interactive)
+  (my/move-line 1))
+
+(global-set-key (kbd "M-<up>") 'my/move-line-up)
+(global-set-key (kbd "M-<down>") 'my/move-line-down)
+
+;; utf-8 all the things
+(set-terminal-coding-system 'utf-8)
+(set-keyboard-coding-system 'utf-8)
+(prefer-coding-system 'utf-8)
+(set-charset-priority 'unicode)
+(setq default-process-coding-system '(utf-8-unix . utf-8-unix))
+
+;; I don't know when trailing whitespace is useful
+(add-hook 'before-save-hook 'delete-trailing-whitespace)
+
+;; emacs doesn't have this set by default for some reason...
+(setq xref-auto-jump-to-first-xref 'show)
+#+end_src
+
+* State Management/File Locations
+#+begin_src emacs-lisp
+
+;; create a state dir
+(defvar my/emacs-state-directory (expand-file-name "state/" user-emacs-directory)
+  "Directory for Emacs state files like backups and auto-saves.")
+
+(unless (file-exists-p my/emacs-state-directory)
+  (make-directory my/emacs-state-directory t))
+
+;; backups
+(setq backup-directory-alist `((".*" . ,(concat my/emacs-state-directory "backups/"))))
+(setq delete-old-versions -1)
+(setq version-control t)
+(setq vc-make-backup-files t)
+(setq backup-by-copying t)
+
+;; auto-save
+(setq auto-save-directory (expand-file-name "auto-save-list/" my/emacs-state-directory))
+(setq auto-save-list-file-prefix auto-save-directory)
+(setq auto-save-file-name-transforms `((".*" ,auto-save-directory t)))
+
+;; tramp
+(setq tramp-auto-save-directory auto-save-directory)
+(setq tramp-persistency-file-name (concat my/emacs-state-directory "tramp-persistency"))
+
+;; lockfiles
+(setq create-lockfiles nil)
+
+;; desktop
+(setq desktop-path (list my/emacs-state-directory))
+(desktop-save-mode 1)
+
+;; List of authentication sources.
+;; Each entry is the authentication type with optional properties.
+;; Entries are tried in the order in which they appear.
+(setq auth-sources (concat my/emacs-state-directory "auth-sources"))
+
+;; transient is built in, and used by other packages
+(setq transient-history-file (expand-file-name "transient/history.el" my/emacs-state-directory))
+
+#+end_src
+
+* Setup Package/Use Package
+
+#+begin_src emacs-lisp
+    (require 'package)
+
+    ;; set archives
+    (setq package-archives
+	  '(("gnu" . "http://elpa.gnu.org/packages/")
+	    ("melpa" . "https://melpa.org/packages/")
+	    ;; ("melpa-stable" .  "https://stable.melpa.org/packages/")
+	    ))
+    (package-initialize)
+
+    (unless package-archive-contents
+      (package-refresh-contents))
+
+    (unless (package-installed-p 'use-package)
+      (package-install 'use-package))
+
+    (require 'use-package)
+
+    (require 'use-package-ensure)
+    (setq use-package-always-ensure t)
+
+    (use-package use-package-ensure-system-package)
+#+end_src
+
+* Org Mode
+#+begin_src emacs-lisp
+
+;; babel languages
+(org-babel-do-load-languages
+'org-babel-load-languages
+ '((emacs-lisp . t) (ledger . t) (dot . t) (sql . t) (sql . t) (python . t) (js . t) (css . t) (shell . t) (sass . t) (org . t)))
+
+ ;; Ensure Org mode is properly indented
+(setq org-startup-indented t)
+
+;; Adjust the level of indentation (optional, set as per your preference)
+(setq org-indent-indentation-per-level 2)
+
+;; auto-save org files after some time so that I can switch between
+;; devices without dataloss/conflicts
+(add-hook 'auto-save-hook 'org-save-all-org-buffers)
+
+;; TODO keywords
+(setq org-todo-keywords '((sequence "TODO(t)" "IN-PROGRESS(i)" "PAUSED(p)" "WAITING(w)" "FINALIZE(f)" "|" "DONE(d)" "MISSED(m)" "CANCELLED(c)")
+						  (sequence "NOTE(n)" "|" "ARCHIVED(a)" )))
+(setq org-log-done 'time) ;; when moving to DONE create an entry
+(setq org-todo-keyword-faces
+      '(("TODO" :foreground "firebrick3" :weight bold)
+		("PAUSED" :foreground "firebrick3" :weight bold)
+		("WAITING" :foreground "yellow")
+		("IN-PROGRESS" :foreground "green" :weight bold)
+		("NOTE" :foreground "orange" :weight bold)
+		("FINALIZE" :foreground "yellow" :weight bold)))
+
+;; make ctrl-a org-aware
+(setq org-special-ctrl-a/e t)
+
+(defun my/org-back-to-indentation ()
+  "Move point to the first non-whitespace & non-headline asterisk character on this line."
+  (interactive "^")
+  (if org-special-ctrl-a/e
+      (org-beginning-of-line 1)
+    (beginning-of-line 1))
+  (skip-syntax-forward " _" (line-end-position))
+  ;; Move back over chars that have whitespace syntax but have the p flag.
+  (backward-prefix-chars))
+
+(defun my/set-org-mode-bindings ()
+  "Set keybindings specific to Org mode."
+  ;; Uncomment the next line if you have a specific binding for 'org-insert-heading-respect-content
+  ;; (local-set-key (kbd "ESC-M-<RET>") 'org-insert-heading-respect-content)
+  (local-set-key (kbd "M-m") 'my/org-back-to-indentation))
+
+(add-hook 'org-mode-hook 'my/set-org-mode-bindings)
+
+;; tree visibility niceties
+(setq org-startup-indented t)
+
+;; visual line mode
+(with-eval-after-load 'org
+  (add-hook 'org-mode-hook #'visual-line-mode))
+
+;; don't accidentally edit when not showing text
+(setq org-catch-invisible-edits 'show)
+
+;; tangle all org files for literate programming
+(add-hook 'org-mode-hook
+          (lambda () (add-hook 'after-save-hook #'org-babel-tangle
+                          :append :local)))
+;;
+(setq org-src-fontify-natively t)
+
+;;;;; org-mode has some keybindings I disagree with
+;;;(remove-hook 'org-metadown-hook #'org-babel-pop-to-session-maybe)
+;;;(remove-hook 'org-metaup-hook #'org-babel-load-in-session-maybe)
+;;;(with-eval-after-load 'org-src
+;;;  (define-key org-src-mode-map (kbd "M-<up>") 'my/move-line-up)
+;;;  (define-key org-src-mode-map (kbd "M-<down>") 'my/move-line-down))
+#+end_src
+
+* Key Bindings Pop-up
+~which-key~ provides pop-up showing available key bindings
+#+begin_src emacs-lisp
+(use-package which-key)
+(which-key-mode)
+#+end_src
+* Magit is the greatest gift since git itself
+
+#+begin_src emacs-lisp
+
+;; magit requires bookmark, and we want to customize so require it here
+(use-package bookmark
+  :config
+  (setq bookmark-default-file (concat my/emacs-state-directory "bookmarks")))
+
+;;
+(use-package magit
+  :custom
+  (magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1)
+  :config
+  (setq magit-highlight-whitespace nil)
+  (setq magit-highlight-trailing-whitespace nil)
+  (setq magit-highlight-indentation nil)
+  (setq magit-diff-refine-hunk nil)
+  (global-set-key (kbd "C-x g") 'magit-status))
+
+
+
+#+end_src
+
+* Search with ripgrep
+#+begin_src emacs-lisp
+(use-package rg
+  :config
+  (setq rg-enable-menu t)
+  :ensure-system-package
+  (rg . ripgrep))
+(global-set-key (kbd "M-r") 'rg)
+#+end_src
+
+* Give Emacs Psychic Completion Powers
+
+[[https://github.com/daviwil/emacs-from-scratch/blob/master/show-notes/Emacs-Tips-Prescient.org][Emacs Tips: Prescient]]
+
+#+begin_src emacs-lisp
+  '(use-package ivy
+    :config
+    (setq ivy-use-virtual-buffers t)
+    (setq enable-recursive-minibuffers t)
+    (setq ivy-count-format "(%d/%d) ")
+    (setq ivy-use-selectable-prompt t)
+    (setq ivy-magic-tilde nil))
+
+  (ivy-mode 1)  ; Enable ivy-mode
+  (ivy-define-key ivy-minibuffer-map (kbd "TAB") #'ivy-partial)
+
+  (use-package hydra)
+
+  (use-package ivy-hydra
+    :after ivy hydra)
+
+  (use-package counsel)
+
+  (use-package prescient
+    :config
+    (setq prescient-save-file (expand-file-name "prescient-save.el" my/emacs-state-directory))
+    (prescient-persist-mode 1))
+
+  (use-package ivy-prescient
+    :after counsel
+    :config
+    (ivy-prescient-mode 1))
+
+  (use-package company-prescient
+    :after company
+    :config
+    (company-prescient-mode 1))
+
+  (use-package ivy-xref
+    :after ivy
+    :config
+    (setq xref-show-xrefs-function 'ivy-xref-show-xrefs))
+
+#+end_src
+
+* Python
+
+** Functions to setup paths
+#+begin_src emacs-lisp
+  (defun my/locate-dominating-pipenv ()
+    "Locate the Pipenv binary based on the Python version from .tool-versions."
+    (let ((tools-dir (locate-dominating-file default-directory ".tool-versions")))
+      (when tools-dir
+        (with-temp-buffer
+          (insert-file-contents (expand-file-name ".tool-versions" tools-dir))
+          (goto-char (point-min))
+          (when (re-search-forward "^python \\(.*\\)$" nil t)
+            (let* ((python-version (match-string 1))
+                   (pipenv-path (concat "/home/karim/.asdf/installs/python/" python-version "/bin/pipenv")))
+              (if (file-executable-p pipenv-path)
+                  (message "Located Pipenv binary: %s" pipenv-path)
+                (message "Pipenv binary not found for Python version %s" python-version))
+              pipenv-path))))))
+
+  (defun my/find-pipenv-venv-path ()
+    "Find the virtual environment path for the current Pipenv project."
+    (let ((pipenv-bin (my/locate-dominating-pipenv)))
+      (when pipenv-bin
+        (let ((default-directory (locate-dominating-file default-directory "Pipfile")))
+          (when default-directory
+            (string-trim-right (shell-command-to-string (concat pipenv-bin " -q --venv"))))))))
+
+  (defun my/setup-venv-paths ()
+    "Set the env PATH and exec-path variables based on the current file's virtual environment."
+    (interactive)
+    (let ((venv-path (my/find-pipenv-venv-path)))
+      (when venv-path
+        (let* ((python-bin-path (concat venv-path "/bin"))
+               (venv-regex ".*\\.venv.*/bin.*")
+               (path-separator ":"))
+
+          (message "Setting up venv paths for file: %s" (buffer-file-name))
+
+          (message "\tOLD exec-path: %s" exec-path)
+          ;; Remove old virtual environment paths from exec-path
+          (setq exec-path (cl-remove-if (lambda (p) (string-match-p venv-regex p)) exec-path))
+
+          ;; Add new virtual environment path to exec-path
+          (add-to-list 'exec-path python-bin-path)
+          (message "\tNEW exec-path: %s" exec-path)
+
+          (message "\tOLD PATH: %s" (getenv "PATH"))
+          ;; Remove old virtual environment paths from PATH
+          (let ((path-list (split-string (getenv "PATH") path-separator)))
+            (setq path-list (cl-remove-if (lambda (p) (string-match-p venv-regex p)) path-list))
+
+            ;; Add new virtual environment path to PATH
+            (setenv "PATH" (mapconcat 'identity (cons python-bin-path path-list) path-separator)))
+
+          (setq python-shell-interpreter (concat python-bin-path "/python"))
+          (message "\tNEW PATH: %s" (getenv "PATH"))))))
+
+#+end_src
+
+** setup python mode
+
+#+begin_src emacs-lisp
+  (defun my/setup-python ()
+    "Setup for Python mode with LSP."
+    (lsp-deferred)
+    (my/setup-venv-paths)
+    (flymake-mode-off))
+    ;;(add-hook 'before-save-hook 'lsp-format-buffer nil t)
+
+  (add-hook 'python-mode-hook 'my/setup-python)
+
+  (use-package python-black
+    :demand t
+    :after python
+    :hook (python-mode . python-black-on-save-mode-enable-dwim))
+
+  (use-package isortify
+    :hook (python-mode . isortify-mode))
+
+
+#+end_src
+
+
+
+** reference                                                      :noexport:
+https://github.com/chantera/python-lsp-isort
+https://github.com/python-lsp/python-lsp-black
+
+#+begin_src
+  ##
+  ## Make sure the supporting packages are installed
+  ##
+  pip install python-lsp-black
+  pip install python-lsp-isort
+  pip install flake8
+  pip install pylint
+#+end_src
+
+* Typescript/JS
+** asdf
+#+begin_src emacs-lisp
+  (defun my/list-installed-node-versions ()
+    "List installed Node.js versions."
+    (let ((node-dir "/home/karim/.asdf/installs/nodejs/"))
+      (directory-files node-dir nil "^[0-9]")))
+
+  (defun my/set-node-version (version)
+    "Set the Node.js version setting the asdf install dir in $PATH"
+    (let ((node-path (concat "/home/karim/.asdf/installs/nodejs/" version "/bin"))
+          (path-separator ":"))
+      ;; Filter out existing Node.js paths from exec-path
+      (setq exec-path (cl-remove-if (lambda (p) (string-match-p "/.asdf/installs/nodejs/" p)) exec-path))
+      ;; Add the new Node.js path to exec-path
+      (add-to-list 'exec-path node-path)
+
+      ;; Filter out existing Node.js paths from PATH
+      (let ((path-list (split-string (getenv "PATH") path-separator)))
+        (setq path-list (cl-remove-if (lambda (p) (string-match-p "/.asdf/installs/nodejs/" p)) path-list))
+        ;; Add the new Node.js path to PATH
+        (setenv "PATH" (mapconcat 'identity (cons node-path path-list) path-separator)))
+
+      (message "Switched to Node.js version %s:\n\t%s\n\t%s" version (getenv "PATH") exec-path)))
+
+  (defun choose-node-version ()
+    "Interactive command to choose and set the Node.js version."
+    (interactive)
+    (let* ((versions (my/list-installed-node-versions))
+           (version (completing-read "Select Node version: " versions nil t)))
+      (when version
+        (my/set-node-version version))))
+
+  (defun my/find-and-set-node-version ()
+    "Find the .tool-versions dominating file and set the Node.js version."
+    (let ((dir (locate-dominating-file default-directory ".tool-versions")))
+      (when dir
+        (with-temp-buffer
+          (insert-file-contents (expand-file-name ".tool-versions" dir))
+          (goto-char (point-min))
+          (when (re-search-forward "^nodejs \\(.*\\)$" nil t)
+            (my/set-node-version (match-string 1)))))))
+#+end_src
+
+** modes
+#+begin_src emacs-lisp
+  ;; Install prettier-js if not already installed
+  (use-package prettier-js
+    :ensure t)
+
+  ;; web-mode for .ts and .tsx
+  (use-package web-mode
+    :ensure t
+    :init
+    (setq web-mode-markup-indent-offset 2) ; HTML
+    (setq web-mode-css-indent-offset 2)    ; CSS
+    (setq web-mode-code-indent-offset 2)   ; JavaScript/TypeScript
+    (setq web-mode-enable-auto-quoting nil)
+    :mode ("\\.ts\\'" "\\.tsx\\'"))
+
+  ;; JavaScript and JSX modes
+  (use-package js2-mode
+    :ensure t
+    :mode ("\\.js\\'" "\\.cjs\\'" "\\.jsx\\'")
+    :config
+    ;; (setq js2-idle-timer-delay 0.5)  ; if needed for large files, in seconds
+    :interpreter "node")
+
+  (defun my/setup-js ()
+    "general web/ts/js mode setup"
+    (lsp-deferred)
+    (flymake-mode-off)
+    (setq tab-width 2)
+    (my/find-and-set-node-version)
+    (prettier-js-mode))
+
+  (dolist (mode-hook '(js2-mode-hook js2-jsx-mode-hook web-mode-hook))
+    (add-hook mode-hook 'my/setup-js))
+#+end_src
+
+* LSP
+
+#+begin_src emacs-lisp
+
+  ;; if you install a new lsp-mode, make sure you add the necessry bin paths to exec-path in lisp/custom.el
+  (use-package lsp-mode
+    :diminish
+    :commands (lsp lsp-deferred)
+    :init
+    (setq lsp-keymap-prefix "C-c l")
+    (setq  lsp-ui-doc-show-with-cursor nil)
+    (setq lsp-session-file (expand-file-name "lsp/session" my/emacs-state-directory))
+
+    :config
+    (add-to-list 'lsp-enabled-clients 'pylsp)
+    (add-to-list 'lsp-enabled-clients 'ts-ls)
+    (add-to-list 'lsp-enabled-clients 'eslint)
+    (lsp-enable-which-key-integration t)
+    (lsp-headerline-breadcrumb-mode)
+    (lsp-register-custom-settings
+     '(("pylsp.plugins.black.enabled" t t)
+       ("pylsp.plugins.flake8.enabled" t t)
+       ("pylsp.plugins.isort.enabled" t t)
+       ("pylsp.plugins.rope_autoimport.enabled" t t))))
+  ;; This enables both completions and code actions. You can switch them off by setting
+  ;; pylsp.plugins.rope_autoimport.completions.enabled and/or pylsp.plugins.rope_autoimport.code_actions.enabled to false
+
+  (use-package lsp-ui
+    :commands lsp-ui-mode)
+#+end_src
+
+* Dockerfile mode
+
+#+begin_src emacs-lisp
+(use-package dockerfile-mode
+  :mode ("[Dd]ockerfile\\'" . dockerfile-mode))
+#+end_src
+
+* string-inflection - Programming Variable Casing
+#+begin_src emacs-lisp
+;; cycle through coding style cases
+(use-package string-inflection
+  :bind ("C-c C-u" . string-inflection-all-cycle)
+  :hook (python-mode . (lambda ()
+                         (local-set-key (kbd "C-c C-u") 'string-inflection-python-style-cycle)))
+        (js2-mode . (lambda ()
+                         (local-set-key (kbd "C-c C-u") 'string-inflection-java-style-cycle))))
+
+#+end_src
+
+* Recentf
+~recentf~ defaults to saving in ~.emacs.d~. Configure it to use state dir
+#+begin_src emacs-lisp
+(use-package recentf
+  :init
+  (setq recentf-save-file (expand-file-name "recentf" my/emacs-state-directory))
+  :config
+  (recentf-mode 1))
+#+end_src
+
+* SQL
+
+
+#+begin_src emacs-lisp
+  (use-package sql-indent
+    :ensure t
+    :after sql
+    :hook (sql-mode . sqlind-minor-mode))
+
+  (use-package sql
+    :ensure t
+    :mode ("\\.sql\\'" . sql-mode)
+    :config
+    (add-hook 'sql-mode-hook
+              (lambda ()
+                ;; Additional SQL mode configurations can go here
+                )))
+
+
+#+end_src
+
+* CSS
+
+#+begin_src emacs-lisp
+(add-to-list 'auto-mode-alist '("\\.css\\'" . css-mode))
+
+(add-hook 'css-mode-hook
+          (lambda ()
+            (setq-local css-indent-offset 2)
+            (add-hook 'before-save-hook 'prettier-js nil t)))
+;(setq css-mode-hook nil)
+
+(add-to-list 'auto-mode-alist '("\\.scss\\'" . scss-mode))
+(add-hook 'scss-mode-hook
+          (lambda ()
+            (setq-local css-indent-offset 2)
+            (add-hook 'before-save-hook 'prettier-js nil t)))
+
+(setq scss-mode-hook nil)
+#+end_src
+
+* JSON
+
+#+begin_src emacs-lisp
+  (use-package json-reformat
+    :ensure t)
+  (use-package json-snatcher
+    :ensure t)
+  (use-package json-mode
+    :ensure t)
+
+  (add-hook 'json-mode-hook
+            (lambda ()
+              (make-local-variable 'js-indent-level)
+              (setq js-indent-level 2)
+              (setq indent-tabs-mode nil)
+              (prettier-js-mode)
+              ;; Add a save hook to format with Prettier
+              (add-hook 'before-save-hook 'prettier-js nil t)))
+
+#+end_src
+
+* ledger
+
+#+begin_src emacs-lisp
+;; ledger-mode
+(use-package ledger-mode
+  :defer t
+  :config
+  (add-to-list 'auto-mode-alist '("\\.lgr$" . ledger-mode))
+  (add-to-list 'auto-mode-alist '("\\.txs$" . ledger-mode))
+  (add-to-list 'auto-mode-alist '("\\.ledger$" . ledger-mode))
+  (setq ledger-binary-path "/usr/local/bin/ledger"))
+#+end_src
+
+* Ruby
+...just in case they make me
+
+#+begin_src emacs-lisp
+(add-to-list 'auto-mode-alist '("\\.rb$" . ruby-mode))
+(add-to-list 'auto-mode-alist '("Rakefile$" . ruby-mode))
+(add-to-list 'auto-mode-alist '("\\.rake$" . ruby-mode))
+(add-to-list 'auto-mode-alist '("\\.gemspec$" . ruby-mode))
+(add-to-list 'auto-mode-alist '("\\.ru$" . ruby-mode))
+(add-to-list 'auto-mode-alist '("Gemfile" . ruby-mode))
+(add-to-list 'auto-mode-alist '("Capfile" . ruby-mode))
+(add-to-list 'auto-mode-alist '("Vagrantfile" . ruby-mode))
+#+end_src
+
+* Mac
+#+begin_src emacs-lisp
+  ;; In a world where I am forced to use osx as my device driver...
+  (when (eq system-type 'darwin)
+
+    ;; Mac spell checker is aspell, assumes you homebrew installed it already
+    (setq ispell-program-name "/usr/local/bin/aspell"
+          mac-command-modifier 'meta
+          frame-title-format '("%b")
+          ring-bell-function 'ignore)
+
+    (setq mac-allow-anti-aliasing t)
+
+    ;; Work around a bug on OS X where system-name is FQDN
+    (setq system-name (car (split-string system-name "\\.")))
+
+    (global-set-key (kbd "M-`") 'next-multiframe-window)
+
+    (setq ls-lisp-use-insert-directory-program nil)
+    (require 'ls-lisp))
+#+end_src
+
+* Customize
+#+begin_src emacs-lisp
+;; custom settings live where I can check them into vcs
+(setq custom-file (concat user-emacs-directory "custom.el"))
+(load custom-file)
+#+end_src
