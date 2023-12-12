@@ -1,0 +1,41 @@
+Angry Fruit Salad
+  - Curtis
+
+* DONE OrgMode Examples - Headline Hierarchy - Level 1: The Lone Star State
+Howdy partner! This is Texas-style cowboy lorem ipsum.
+** TODO Level 2: Ridin' the Range
+Y'all gotta saddle up, 'cause we're about to take a ride across the wide prairies.
+*** IN-PROGRESS Level 3: The Rodeo
+Ain't nothin' like the thrill of a rodeo, where cowboys and cowgirls show their grit.
+**** PAUSED Level 4: Campfire Tales
+Gather 'round the campfire, let me tell y'all a tale under the starry night.
+***** WAITING Level 5: Cattle Drivin'
+Driving cattle across the plains is tough work, but it's the heart of a cowboy's life.
+****** FINALIZE Level 6: The Old Saloon
+Step into the old saloon, where tales are as tall as the glasses are full.
+******* DONE Level 7: The Desert Sun
+CLOSED: [2023-12-05 Tue 13:12]
+The desert sun beats down, but it's the life of freedom that keeps a cowboy goin'.
+******** MISSED Level 8: The Lone Cowboy
+CLOSED: [2023-12-05 Tue 13:12]
+Out here, the lone cowboy rides, free as the wind on the endless Texas plains.
+********* CANCELLED Level 9: Bless her little heart!
+CLOSED: [2023-12-05 Tue 13:14]
+********** NOTE Whisper of the Wind
+Yonder in the distance, a lone coyote howls, echoing the song of the wild west.
+*********** ARCHIVED Tales of the Trail
+CLOSED: [2023-12-05 Tue 13:15]
+Where memories of days gone by linger in the air like the scent of smoldering post oak.
+* DONE OrgMode Examples - Emphasis and Code
+You can make words *bold*, /italic/, _underlined_, =verbatim= and ~code~, and, if you must, +strike-through+.
+** I have customized ~org-hide-emphasis-markers~ to ~true~ to avoid this look:
+#+begin_src orgmode
+When you show markers, it can get kinda ugly: *bold*, /italic/,
+ _underlined_, =verbatim= and ~code~, and +strike-through+.
+#+end_src
+** See Also
+If you ever find yourself in a situation where you want marked text to contain a marker character, [[https://orgmode.org/manual/Emphasis-and-Monospace.html][read the manual page for this situation]].
+* DONE OrgMode Examples - Dates
+CLOSED: [2023-12-08 Fri 12:59]
+
+<2023-12-08 Fri>

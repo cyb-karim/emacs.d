@@ -1,5 +1,3 @@
-* Config                                                           :noexport:
-#+PROPERTY: header-args :tangle init.el
 * Emacs, the One True Editor
 #+begin_src emacs-lisp
 ;; "Emacs outshines all other editing software in approximately the
@@ -8,16 +6,17 @@
 ;;
 ;;          - Neal Stephenson, "In the Beginning was the Command Line"
 #+end_src
-
 * init.el dev helpers
-
+#+PROPERTY: header-args:emacs-lisp :tangle init.el
 #+begin_src emacs-lisp
-  (defun reload-init-file ()
-    "Reload the Emacs init file."
-    (interactive)
-    (load-file "~/.emacs.d/init.el"))
+;; dev helper functions
+(defun my/reload-init-file ()
+  "Reload the Emacs init file and the custom file."
+  (interactive)
+  (load-file "~/.emacs.d/init.el")
+  (load-file (concat user-emacs-directory "custom.el")))
 
-  (global-set-key (kbd "C-c C-x C-r") 'reload-init-file)
+  (global-set-key (kbd "C-c C-x C-r") 'my/reload-init-file)
 
   ;; This block creates a key binding to wrap a block of code in org mode source code block tags
   (defvar my/org-last-src-lang "emacs-lisp"
@@ -46,83 +45,85 @@
     (define-key org-mode-map (kbd "C-c C-x C-s") 'my/org-insert-or-wrap-src-block))
 #+end_src
 
-* Basic/Global Settings
+* Basic Global Settings
 #+begin_src emacs-lisp
-(setq inhibit-startup-message t)
-(menu-bar-mode -1)  ; Disables the menu bar
-(tool-bar-mode -1)  ; Disables the tool bar
-(blink-cursor-mode -1)  ; Disables the blinking cursor
-(scroll-bar-mode -1) ; Disables the scroll bar
-(defalias 'yes-or-no-p 'y-or-n-p) ; y/n >= yes/no
+  ;; basic global settings
+  (setq inhibit-startup-message t)  ; Disables the startup message buffer
+  (menu-bar-mode -1)                ; Disables the menu bar
+  (tool-bar-mode -1)                ; Disables the tool bar
+  (blink-cursor-mode -1)            ; Disables the blinking cursor
+  (scroll-bar-mode -1)              ; Disables the scroll bar
+  (defalias 'yes-or-no-p 'y-or-n-p) ; y/n >= yes/no
 
-;; Highlight matching parentheses when the point is on them.
-(show-paren-mode 1)
+  ;; Highlight matching parentheses when the point is on them.
+  (show-paren-mode 1)
 
-;; ffap: aka most annoying feature ever. This flag enforces C-u prefix
-;; so that I may never ever feel its affects. For the love of all that
-;; is holy, even the docs know it sucks: M-x describe-variable
-;; ffap-require-prefix says "Experts may prefer to disable ffap most
-;; of the time." Consider me an expert.
-(setq ffap-require-prefix t)
+  ;; ffap: aka most annoying feature ever. This flag enforces C-u prefix
+  ;; so that I may never ever feel its affects. For the love of all that
+  ;; is holy, even the docs know it sucks: M-x describe-variable
+  ;; ffap-require-prefix says "Experts may prefer to disable ffap most
+  ;; of the time." Consider me an expert.
+  (setq ffap-require-prefix t)
 
-;; almost always coding, almost always want column numbers...
-(setq column-number-mode t)
+  ;; almost always coding, almost always want column numbers...
+  (setq column-number-mode t)
 
-;; Font size keybinding
-(define-key global-map (kbd "C-+") 'text-scale-increase)
-(define-key global-map (kbd "C--") 'text-scale-decrease)
+  ;; Font size keybinding
+  (define-key global-map (kbd "C-+") 'text-scale-increase)
+  (define-key global-map (kbd "C--") 'text-scale-decrease)
 
-;; Use regex searches by default.
-(global-set-key (kbd "C-s") 'isearch-forward-regexp)
-(global-set-key (kbd "\C-r") 'isearch-backward-regexp)
-(global-set-key (kbd "C-M-s") 'isearch-forward)
-(global-set-key (kbd "C-M-r") 'isearch-backward)
+  ;; Use regex searches by default, invert bindings with regular isearch
+  (global-set-key (kbd "C-s") 'isearch-forward-regexp)
+  (global-set-key (kbd "\C-r") 'isearch-backward-regexp)
+  (global-set-key (kbd "C-M-s") 'isearch-forward)
+  (global-set-key (kbd "C-M-r") 'isearch-backward)
 
-;; Transparently open compressed files
-(auto-compression-mode t)
+  ;; Transparently open compressed files
+  (auto-compression-mode t)
 
-;; use ctrl-x,c,v for cut,copy,paste, ctrl-z for undo
-(cua-mode t)
+  ;; use ctrl-x,c,v for cut,copy,paste, ctrl-z for undo, plus fancy
+  ;; rectangle mode
+  (cua-mode t)
 
-;; ibuffer > buffer manager
-(global-set-key (kbd "C-x C-b") 'ibuffer)
+  ;; ibuffer > buffer manager
+  (global-set-key (kbd "C-x C-b") 'ibuffer)
 
-;; allow lines to be moved up and down like org-mode does it
-(defun my/move-line (n)
-  "Move the current line up or down by N lines."
-  (let ((col (current-column)))
-    (beginning-of-line)
-    (when (or (> n 0) (not (bobp))) ; Check if not beginning of buffer when moving up
-      (forward-line 1)
-      (transpose-lines n))
-    (forward-line -1)
-    (forward-char col)))
+  ;; allow lines to be moved up and down like org-mode does it
+  (defun my/move-line (n)
+    "Move the current line up or down by N lines."
+    (let ((col (current-column)))
+      (beginning-of-line)
+      (when (or (> n 0) (not (bobp))) ; Check if not beginning of buffer when moving up
+        (forward-line 1)
+        (transpose-lines n))
+      (forward-line -1)
+      (forward-char col)))
 
-(defun my/move-line-up ()
-  "Move the current line up."
-  (interactive)
-  (my/move-line -1))
+  (defun my/move-line-up ()
+    "Move the current line up."
+    (interactive)
+    (my/move-line -1))
 
-(defun my/move-line-down ()
-  "Move the current line down."
-  (interactive)
-  (my/move-line 1))
+  (defun my/move-line-down ()
+    "Move the current line down."
+    (interactive)
+    (my/move-line 1))
 
-(global-set-key (kbd "M-<up>") 'my/move-line-up)
-(global-set-key (kbd "M-<down>") 'my/move-line-down)
+  (global-set-key (kbd "M-<up>") 'my/move-line-up)
+  (global-set-key (kbd "M-<down>") 'my/move-line-down)
 
-;; utf-8 all the things
-(set-terminal-coding-system 'utf-8)
-(set-keyboard-coding-system 'utf-8)
-(prefer-coding-system 'utf-8)
-(set-charset-priority 'unicode)
-(setq default-process-coding-system '(utf-8-unix . utf-8-unix))
+  ;; utf-8 all the things
+  (set-terminal-coding-system 'utf-8)
+  (set-keyboard-coding-system 'utf-8)
+  (prefer-coding-system 'utf-8)
+  (set-charset-priority 'unicode)
+  (setq default-process-coding-system '(utf-8-unix . utf-8-unix))
 
-;; I don't know when trailing whitespace is useful
-(add-hook 'before-save-hook 'delete-trailing-whitespace)
+  ;; I don't know when trailing whitespace is useful
+  (add-hook 'before-save-hook 'delete-trailing-whitespace)
 
-;; emacs doesn't have this set by default for some reason...
-(setq xref-auto-jump-to-first-xref 'show)
+  ;; emacs doesn't have this set by default for some reason...
+  (setq xref-auto-jump-to-first-xref 'show)
 #+end_src
 
 * State Management/File Locations
@@ -197,80 +198,121 @@
 
 * Org Mode
 #+begin_src emacs-lisp
+  ;; Ensure Org mode is properly indented
+  (setq org-startup-indented t)
 
-;; babel languages
-(org-babel-do-load-languages
-'org-babel-load-languages
- '((emacs-lisp . t) (ledger . t) (dot . t) (sql . t) (sql . t) (python . t) (js . t) (css . t) (shell . t) (sass . t) (org . t)))
+  ;; Adjust the level of indentation (optional, set as per your preference)
+  (setq org-indent-indentation-per-level 2)
 
- ;; Ensure Org mode is properly indented
-(setq org-startup-indented t)
+  ;; tree visibility niceties
+  (setq org-startup-indented t)
 
-;; Adjust the level of indentation (optional, set as per your preference)
-(setq org-indent-indentation-per-level 2)
+  ;; enable native syntax highlighting for source code blocks
+  (setq org-src-fontify-natively t)
 
-;; auto-save org files after some time so that I can switch between
-;; devices without dataloss/conflicts
-(add-hook 'auto-save-hook 'org-save-all-org-buffers)
+  ;; log time completed when moving todo to DONE
+  (setq org-log-done 'time)
 
-;; TODO keywords
-(setq org-todo-keywords '((sequence "TODO(t)" "IN-PROGRESS(i)" "PAUSED(p)" "WAITING(w)" "FINALIZE(f)" "|" "DONE(d)" "MISSED(m)" "CANCELLED(c)")
-						  (sequence "NOTE(n)" "|" "ARCHIVED(a)" )))
-(setq org-log-done 'time) ;; when moving to DONE create an entry
-(setq org-todo-keyword-faces
-      '(("TODO" :foreground "firebrick3" :weight bold)
-		("PAUSED" :foreground "firebrick3" :weight bold)
-		("WAITING" :foreground "yellow")
-		("IN-PROGRESS" :foreground "green" :weight bold)
-		("NOTE" :foreground "orange" :weight bold)
-		("FINALIZE" :foreground "yellow" :weight bold)))
+  ;; don't accidentally edit when not showing text
+  (setq org-catch-invisible-edits 'show)
 
-;; make ctrl-a org-aware
-(setq org-special-ctrl-a/e t)
+  ;; auto-save org files after some time so that I can switch between
+  ;; devices without dataloss/conflicts
+  (add-hook 'auto-save-hook 'org-save-all-org-buffers)
 
-(defun my/org-back-to-indentation ()
-  "Move point to the first non-whitespace & non-headline asterisk character on this line."
-  (interactive "^")
-  (if org-special-ctrl-a/e
-      (org-beginning-of-line 1)
-    (beginning-of-line 1))
-  (skip-syntax-forward " _" (line-end-position))
-  ;; Move back over chars that have whitespace syntax but have the p flag.
-  (backward-prefix-chars))
+  ;; babel languages
+  (org-babel-do-load-languages
+   'org-babel-load-languages
+   '((emacs-lisp . t) (ledger . t) (dot . t) (sql . t) (sql . t) (python . t) (js . t) (css . t) (shell . t) (sass . t) (org . t)))
 
-(defun my/set-org-mode-bindings ()
-  "Set keybindings specific to Org mode."
-  ;; Uncomment the next line if you have a specific binding for 'org-insert-heading-respect-content
-  ;; (local-set-key (kbd "ESC-M-<RET>") 'org-insert-heading-respect-content)
-  (local-set-key (kbd "M-m") 'my/org-back-to-indentation))
+  ;; keywords
+  (setq org-todo-keywords '((sequence "TODO(t)" "IN-PROGRESS(i)" "PAUSED(p)" "WAITING(w)" "FINALIZE(f)" "|" "DONE(d)" "MISSED(m)" "CANCELLED(c)")
+                            (sequence "NOTE(n)" "|" "ARCHIVED(a)" )))
+  (setq org-todo-keyword-faces
+        '(("TODO" :foreground "tomato" :weight bold)
+          ("PAUSED" :foreground "tomato" :weight bold)
+          ("IN-PROGRESS" :foreground "#009900" :weight bold)
+          ("FINALIZE" :foreground "yellow")
+          ("WAITING" :foreground "yellow")
+          ("DONE" :foreground "#6aa84f")
+          ("MISSED" :foreground "#6aa84f")
+          ("CANCELLED" :foreground "#6aa84f")
+          ("ARCHIVED" :foreground "#6aa84f")
+          ("NOTE" :foreground "orange")))
 
-(add-hook 'org-mode-hook 'my/set-org-mode-bindings)
 
-;; tree visibility niceties
-(setq org-startup-indented t)
+  ;; key bindings
+  (defun my/org-back-to-indentation ()
+    "Move point to the first non-whitespace & non-headline asterisk character on this line."
+    (interactive "^")
+    (if org-special-ctrl-a/e
+        (org-beginning-of-line 1)
+      (beginning-of-line 1))
+    (skip-syntax-forward " _" (line-end-position))
+    ;; Move back over chars that have whitespace syntax but have the p flag.
+    (backward-prefix-chars))
 
-;; visual line mode
-(with-eval-after-load 'org
-  (add-hook 'org-mode-hook #'visual-line-mode))
+  (defun my/set-org-mode-bindings ()
+    "Keybindings for Org mode."
+    ;; Uncomment the next line if you have a specific binding for 'org-insert-heading-respect-content
+    ;; (local-set-key (kbd "ESC-M-<RET>") 'org-insert-heading-respect-content)
+    ;; make ctrl-a org-aware
+    (setq org-special-ctrl-a/e t)
+    (local-set-key (kbd "M-m") 'my/org-back-to-indentation))
 
-;; don't accidentally edit when not showing text
-(setq org-catch-invisible-edits 'show)
+  (defun my/set-org-src-mode-bindings ()
+    "Keybindings for `org-src-mode'."
+    (local-set-key (kbd "M-<up>") 'my/move-line-up)
+    (local-set-key (kbd "M-<down>") 'my/move-line-down))
 
-;; tangle all org files for literate programming
-(add-hook 'org-mode-hook
-          (lambda () (add-hook 'after-save-hook #'org-babel-tangle
-                          :append :local)))
-;;
-(setq org-src-fontify-natively t)
+  (with-eval-after-load 'org
+    (add-hook 'org-mode-hook #'visual-line-mode)
+    (add-hook 'org-mode-hook 'my/set-org-mode-bindings)
+    (add-hook 'org-src-mode-hook 'my/set-org-src-mode-bindings))
 
-;;;;; org-mode has some keybindings I disagree with
-;;;(remove-hook 'org-metadown-hook #'org-babel-pop-to-session-maybe)
-;;;(remove-hook 'org-metaup-hook #'org-babel-load-in-session-maybe)
-;;;(with-eval-after-load 'org-src
-;;;  (define-key org-src-mode-map (kbd "M-<up>") 'my/move-line-up)
-;;;  (define-key org-src-mode-map (kbd "M-<down>") 'my/move-line-down))
+      ;;;;; org-mode has some keybindings I disagree with
+      ;;;(remove-hook 'org-metadown-hook #'org-babel-pop-to-session-maybe)
+      ;;;(remove-hook 'org-metaup-hook #'org-babel-load-in-session-maybe)
+      ;;;(with-eval-after-load 'org-src
+      ;;;  (define-key org-src-mode-map (kbd "M-<up>") 'my/move-line-up)
+      ;;;  (define-key org-src-mode-map (kbd "M-<down>") 'my/move-line-down))
+
+  ;; helper packages for html exporting
+  (use-package htmlize
+    :ensure t)
+
+  (use-package ox-html
+    :ensure org  ; Ensure ox-html is installed as part of the org package
+    :config
+    ;; Basic setup
+    (setq org-html-doctype "html5"                  ; Use HTML5 doctype
+          org-html-html5-fancy t                    ; Enable HTML5 features
+          org-html-validation-link nil              ; Disable validation link
+          org-html-head-include-scripts nil         ; Do not include default scripts
+          org-html-head-include-default-style nil)  ; Do not include default CSS
+
+    ;; Custom CSS and JavaScript
+    (setq org-html-head "<link rel=\"stylesheet\" type=\"text/css\" href=\"style.css\" />")
+    ;; (setq org-html-scripts "<script src=\"scripts.js\"></script>")
+
+    ;; Export settings
+    (setq org-export-with-html-style nil       ; Do not include default HTML styles
+          org-export-with-section-numbers 0    ; Do not number sections
+          org-export-with-toc nil              ; Do not generate a table of contents
+          org-export-with-author nil           ; Do not include the author's name
+          org-export-with-creator nil          ; Do not include the Org/Emacs creator info
+          org-export-with-sub-superscripts '{} ; Use '{}' as super-/subscript markers
+          org-html-self-link-headlines nil     ; Create anchors for headlines
+          org-html-preamble nil                ; Disable preamble by default
+          org-html-postamble nil)              ; Disable the HTML postamble
+
+    ;; Set to 't' to enable syntax highlighting code in exported HTML
+    (setq org-html-htmlize-output-type 'inline-css)
+
+    ;; Ensure proper loading of ox-html
+    :after org)
+
 #+end_src
-
 * Key Bindings Pop-up
 ~which-key~ provides pop-up showing available key bindings
 #+begin_src emacs-lisp
@@ -356,8 +398,15 @@
 
 #+end_src
 
-* Python
+* Snippets support
+#+begin_src emacs-lisp
+(use-package yasnippet
+  :ensure t
+  :config
+  (yas-global-mode 1))
+#+end_src
 
+* Python
 ** Functions to setup paths
 #+begin_src emacs-lisp
   (defun my/locate-dominating-pipenv ()
@@ -416,28 +465,35 @@
 #+end_src
 
 ** setup python mode
-
 #+begin_src emacs-lisp
-  (defun my/setup-python ()
-    "Setup for Python mode with LSP."
-    (lsp-deferred)
-    (my/setup-venv-paths)
-    (flymake-mode-off))
-    ;;(add-hook 'before-save-hook 'lsp-format-buffer nil t)
 
-  (add-hook 'python-mode-hook 'my/setup-python)
+(use-package python-black
+  :demand t
+  :hook (python-mode . python-black-on-save-mode-enable-dwim)
+  :after python)
 
-  (use-package python-black
-    :demand t
-    :after python
-    :hook (python-mode . python-black-on-save-mode-enable-dwim))
+(use-package isortify
+  :hook (python-mode . isortify-mode))
 
-  (use-package isortify
-    :hook (python-mode . isortify-mode))
+(defun my/setup-python ()
+  "Setup for Python mode with LSP."
+  (lsp-deferred)
 
+  ;; make sure python path is set correctly for the current file
+  (my/setup-venv-paths)
 
+  ;; Disable LSP as the primary syntax checker for Python in Flycheck
+  (setq-local flycheck-disabled-checkers '(lsp))
+
+  ;; Set Flake8 as the preferred syntax checker
+  (flycheck-select-checker 'python-flake8)
+
+  ;; Enable automatic formatting on save using Black and Isort
+  ;;
+  (isortify-mode))
+
+(add-hook 'python-mode-hook 'my/setup-python)
 #+end_src
-
 
 
 ** reference                                                      :noexport:
@@ -534,30 +590,65 @@ https://github.com/python-lsp/python-lsp-black
     (add-hook mode-hook 'my/setup-js))
 #+end_src
 
+* C# - EXPERIMENTAL
+#+begin_src emacs-lisp
+  (use-package csharp-mode
+    :mode (("\\.cs\\'" . csharp-mode))
+    :ensure t)
+
+  (use-package omnisharp
+    :ensure t
+    :after csharp-mode
+    :config
+    ;; (setq omnisharp-expected-server-version "1.32.8")
+    ;;(setq omnisharp-expected-server-version "1.32.0") ; https://github.com/OmniSharp/omnisharp-vscode/issues/1450#issuecomment-432516876
+    ;;(let ((dotnet-version (string-trim (shell-command-to-string "dotnet --version"))))
+    ;;  ;; https://github.com/OmniSharp/omnisharp-emacs/issues/459#issuecomment-452656947
+    ;;  (setenv "MSBuildSDKsPath" (format "/usr/share/dotnet/sdk/%s/Sdks" dotnet-version)))
+    (setq lsp-csharp-server-path "~/.emacs.d/.cache/lsp/omnisharp-roslyn/latest/OmniSharp")
+    (define-key omnisharp-mode-map (kbd "M-.") #'omnisharp-go-to-definition)
+    (eval-after-load 'company '(add-to-list 'company-backends 'company-omnisharp))
+    (add-hook 'csharp-mode-hook #'company-mode)
+    (add-hook 'csharp-mode-hook #'flycheck-mode)
+    (add-hook 'csharp-mode-hook #'omnisharp-mode)
+    (setq omnisharp-completing-read-function #'ivy-completing-read))
+#+end_src
+
 * LSP
 
 #+begin_src emacs-lisp
-
-  ;; if you install a new lsp-mode, make sure you add the necessry bin paths to exec-path in lisp/custom.el
   (use-package lsp-mode
     :diminish
     :commands (lsp lsp-deferred)
+    :hook (omnisharp . lsp-deferred)
     :init
     (setq lsp-keymap-prefix "C-c l")
-    (setq  lsp-ui-doc-show-with-cursor nil)
     (setq lsp-session-file (expand-file-name "lsp/session" my/emacs-state-directory))
 
     :config
+    ;; language support
     (add-to-list 'lsp-enabled-clients 'pylsp)
     (add-to-list 'lsp-enabled-clients 'ts-ls)
     (add-to-list 'lsp-enabled-clients 'eslint)
+    (add-to-list 'lsp-enabled-clients 'omnisharp)
+
+    ;; agnostic settings
     (lsp-enable-which-key-integration t)
     (lsp-headerline-breadcrumb-mode)
+
+
+    ;; python settings
     (lsp-register-custom-settings
      '(("pylsp.plugins.black.enabled" t t)
        ("pylsp.plugins.flake8.enabled" t t)
        ("pylsp.plugins.isort.enabled" t t)
-       ("pylsp.plugins.rope_autoimport.enabled" t t))))
+       ("pylsp.plugins.rope_autoimport.enabled" t t)
+
+       ;; Disable these as they're duplicated by flake8
+       ("pylsp.plugins.pycodestyle.enabled" nil t)
+       ("pylsp.plugins.mccabe.enabled" nil t)
+       ("pylsp.plugins.pyflakes.enabled" nil t))))
+
   ;; This enables both completions and code actions. You can switch them off by setting
   ;; pylsp.plugins.rope_autoimport.completions.enabled and/or pylsp.plugins.rope_autoimport.code_actions.enabled to false
 
@@ -656,6 +747,18 @@ https://github.com/python-lsp/python-lsp-black
 
 #+end_src
 
+* YAML
+#+begin_src emacs-lisp
+(use-package yaml-mode
+  :ensure t
+  :mode ("\\.yml\\'" "\\.yaml\\'")
+  :hook (yaml-mode . (lambda ()
+                       ;; Indentation settings
+                       (setq indent-tabs-mode nil)
+                       (setq yaml-indent-offset 2)))
+  :config
+  (add-hook 'yaml-mode-hook #'flycheck-mode))
+#+end_src
 * ledger
 
 #+begin_src emacs-lisp
@@ -711,3 +814,8 @@ https://github.com/python-lsp/python-lsp-black
 (setq custom-file (concat user-emacs-directory "custom.el"))
 (load custom-file)
 #+end_src
+
+* Tangle
+# Local Variables:
+# eval: (add-hook 'after-save-hook #'org-babel-tangle nil t)
+# End:
