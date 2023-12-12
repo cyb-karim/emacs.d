@@ -72,12 +72,6 @@
   (define-key global-map (kbd "C-+") 'text-scale-increase)
   (define-key global-map (kbd "C--") 'text-scale-decrease)
 
-  ;; Use regex searches by default, invert bindings with regular isearch
-  (global-set-key (kbd "C-s") 'isearch-forward-regexp)
-  (global-set-key (kbd "\C-r") 'isearch-backward-regexp)
-  (global-set-key (kbd "C-M-s") 'isearch-forward)
-  (global-set-key (kbd "C-M-r") 'isearch-backward)
-
   ;; Transparently open compressed files
   (auto-compression-mode t)
 
@@ -358,43 +352,44 @@
 [[https://github.com/daviwil/emacs-from-scratch/blob/master/show-notes/Emacs-Tips-Prescient.org][Emacs Tips: Prescient]]
 
 #+begin_src emacs-lisp
+  (use-package ivy
+    :ensure t
+    :config
+    (ivy-mode 1)
 
+    ;; enable character folding, which is to find similar chars, such as
+    ;; accented characters:
+    ;; (setq search-default-mode #'char-fold-to-regexp)
 
-(use-package ivy
-  :ensure t
-  :config
-  (ivy-mode 1)
-  ;; enable this if you want `swiper' to use it
-  ;; (setq search-default-mode #'char-fold-to-regexp)
-  (ivy-define-key ivy-minibuffer-map (kbd "TAB") #'ivy-partial)
-     (setq ivy-use-virtual-buffers t)
-     (setq enable-recursive-minibuffers t)
-     (setq ivy-count-format "(%d/%d) ")
-     (setq ivy-use-selectable-prompt t)
-     (setq ivy-magic-tilde nil))
+    (ivy-define-key ivy-minibuffer-map (kbd "TAB") #'ivy-partial)
+    (setq ivy-use-virtual-buffers t)
+    (setq enable-recursive-minibuffers t)
+    (setq ivy-count-format "(%d/%d) ")
+    (setq ivy-use-selectable-prompt t)
+    (setq ivy-magic-tilde nil))
 
+  (use-package counsel
+    :ensure t
+    :bind
+    ("C-s" . swiper)
+    ("C-r" . ivy-resume)
+    ("M-x" . counsel-M-x)
+    ("C-x C-f" . counsel-find-file)
 
+    ;; recommended key bindings I don't have a use for yet.
+    ;;("<f1> f" . counsel-describe-function)
+    ;;("<f1> v" . counsel-describe-variable)
+    ;;("<f1> o" . counsel-describe-symbol)
+    ;;("<f1> l" . counsel-find-library)
+    ;;("<f2> i" . counsel-info-lookup-symbol)
+    ;;("<f2> u" . counsel-unicode-char)
+    ;;("C-c g" . counsel-git)
+    ;;("C-c j" . counsel-git-grep)
+    ;;("C-c k" . counsel-ag)
+    ;;("C-x l" . counsel-locate)
 
-(use-package counsel
-  :ensure t
-  :bind
-  ("C-s" . swiper)
-   ("C-c C-r" . ivy-resume)
-     ("M-x" . counsel-M-x)
-   ("C-x C-f" . counsel-find-file)
-   ("<f1> f" . counsel-describe-function)
-   ("<f1> v" . counsel-describe-variable)
-   ("<f1> o" . counsel-describe-symbol)
-   ("<f1> l" . counsel-find-library)
-   ("<f2> i" . counsel-info-lookup-symbol)
-   ("<f2> u" . counsel-unicode-char)
-   ("C-c g" . counsel-git)
-   ("C-c j" . counsel-git-grep)
-   ("C-c k" . counsel-ag)
-   ("C-x l" . counsel-locate)
-
-  :init
-  (define-key minibuffer-local-map (kbd "C-r") 'counsel-minibuffer-history))
+    :init
+    (define-key minibuffer-local-map (kbd "C-r") 'counsel-minibuffer-history))
 
   (use-package hydra)
 
@@ -784,7 +779,12 @@ https://github.com/python-lsp/python-lsp-black
   :config
   (add-hook 'yaml-mode-hook #'flycheck-mode))
 #+end_src
-* ledger
+
+* Config files
+#+begin_src emacs-lisp
+  (add-to-list 'auto-mode-alist '("\\.env\\'" . conf-mode))
+#+end_src
+* Ledger
 
 #+begin_src emacs-lisp
 ;; ledger-mode
@@ -841,6 +841,13 @@ https://github.com/python-lsp/python-lsp-black
 #+end_src
 
 * Tangle
+This local variables section ensures that we save init.el on save
+#+begin_src conf
+# Local Variables:
+# eval: (add-hook 'after-save-hook #'org-babel-tangle nil t)
+# End:
+#+end_src
+
 # Local Variables:
 # eval: (add-hook 'after-save-hook #'org-babel-tangle nil t)
 # End:
