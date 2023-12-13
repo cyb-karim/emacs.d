@@ -305,7 +305,6 @@
 
     ;; Ensure proper loading of ox-html
     :after org)
-
 #+end_src
 * Key Bindings Pop-up
 ~which-key~ provides pop-up showing available key bindings
@@ -489,17 +488,20 @@
 
 (use-package python-black
   :demand t
-  :hook (python-mode . python-black-on-save-mode-enable-dwim)
   :after python)
 
 (use-package isortify
   :hook (python-mode . isortify-mode))
 
+(defun my/python-format-buffer ()
+  "Format buffer with isort and then black."
+  (when (eq major-mode 'python-mode)
+    (isortify-buffer)
+    (python-black-buffer)))
+
 (defun my/setup-python ()
   "Setup for Python mode with LSP."
   (lsp-deferred)
-
-  ;; make sure python path is set correctly for the current file
   (my/setup-venv-paths)
 
   ;; Disable LSP as the primary syntax checker for Python in Flycheck
@@ -509,8 +511,7 @@
   (flycheck-select-checker 'python-flake8)
 
   ;; Enable automatic formatting on save using Black and Isort
-  ;;
-  (isortify-mode))
+  (add-hook 'before-save-hook 'my/python-format-buffer nil t))
 
 (add-hook 'python-mode-hook 'my/setup-python)
 #+end_src
