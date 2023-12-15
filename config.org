@@ -447,39 +447,42 @@
     "Find the virtual environment path for the current Pipenv project."
     (let ((pipenv-bin (my/locate-dominating-pipenv)))
       (when pipenv-bin
+      (message "Found pipenv: %s" pipenv-bin)
         (let ((default-directory (locate-dominating-file default-directory "Pipfile")))
           (when default-directory
-            (string-trim-right (shell-command-to-string (concat pipenv-bin " -q --venv"))))))))
+            (let ((venv-path (string-trim-right (shell-command-to-string (concat pipenv-bin " -q --venv")))))
+              (message "Found venv path: %s" venv-path)
+              venv-path))))))
 
-  (defun my/setup-venv-paths ()
-    "Set the env PATH and exec-path variables based on the current file's virtual environment."
-    (interactive)
-    (let ((venv-path (my/find-pipenv-venv-path)))
-      (when venv-path
-        (let* ((python-bin-path (concat venv-path "/bin"))
-               (venv-regex ".*\\.venv.*/bin.*")
-               (path-separator ":"))
+    (defun my/setup-venv-paths ()
+      "Set the env PATH and exec-path variables based on the current file's virtual environment."
+      (interactive)
+      (let ((venv-path (my/find-pipenv-venv-path)))
+        (when venv-path
+          (let* ((python-bin-path (concat venv-path "/bin"))
+                 (venv-regex ".*\\.venv.*/bin.*")
+                 (path-separator ":"))
 
-          (message "Setting up venv paths for file: %s" (buffer-file-name))
+            (message "Setting up venv paths for file: %s" (buffer-file-name))
 
-          (message "\tOLD exec-path: %s" exec-path)
-          ;; Remove old virtual environment paths from exec-path
-          (setq exec-path (cl-remove-if (lambda (p) (string-match-p venv-regex p)) exec-path))
+            (message "\tOLD exec-path: %s" exec-path)
+            ;; Remove old virtual environment paths from exec-path
+            (setq exec-path (cl-remove-if (lambda (p) (string-match-p venv-regex p)) exec-path))
 
-          ;; Add new virtual environment path to exec-path
-          (add-to-list 'exec-path python-bin-path)
-          (message "\tNEW exec-path: %s" exec-path)
+            ;; Add new virtual environment path to exec-path
+            (add-to-list 'exec-path python-bin-path)
+            (message "\tNEW exec-path: %s" exec-path)
 
-          (message "\tOLD PATH: %s" (getenv "PATH"))
-          ;; Remove old virtual environment paths from PATH
-          (let ((path-list (split-string (getenv "PATH") path-separator)))
-            (setq path-list (cl-remove-if (lambda (p) (string-match-p venv-regex p)) path-list))
+            (message "\tOLD PATH: %s" (getenv "PATH"))
+            ;; Remove old virtual environment paths from PATH
+            (let ((path-list (split-string (getenv "PATH") path-separator)))
+              (setq path-list (cl-remove-if (lambda (p) (string-match-p venv-regex p)) path-list))
 
-            ;; Add new virtual environment path to PATH
-            (setenv "PATH" (mapconcat 'identity (cons python-bin-path path-list) path-separator)))
+              ;; Add new virtual environment path to PATH
+              (setenv "PATH" (mapconcat 'identity (cons python-bin-path path-list) path-separator)))
 
-          (setq python-shell-interpreter (concat python-bin-path "/python"))
-          (message "\tNEW PATH: %s" (getenv "PATH"))))))
+            (setq python-shell-interpreter (concat python-bin-path "/python"))
+            (message "\tNEW PATH: %s" (getenv "PATH"))))))
 
 #+end_src
 
@@ -515,7 +518,6 @@
 
 (add-hook 'python-mode-hook 'my/setup-python)
 #+end_src
-
 
 ** reference                                                      :noexport:
 https://github.com/chantera/python-lsp-isort
@@ -636,6 +638,11 @@ https://github.com/python-lsp/python-lsp-black
 #+end_src
 
 * LSP
+This requires you install the language servers, don't know why they can't all be automatically installed
+#+begin_src shell
+# python requires you have run this inside and outside your venv
+pip install python-language-server[all]
+#+end_src
 
 #+begin_src emacs-lisp
   (use-package lsp-mode
