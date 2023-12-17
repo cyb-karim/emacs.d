@@ -48,6 +48,8 @@
  '(markdown-code-face ((t nil)))
  '(markdown-header-face-1 ((t (:inherit org-level-1))))
  '(markdown-header-face-2 ((t (:inherit org-level-2))))
+ '(markdown-header-face-3 ((t (:inherit org-level-3))))
+ '(markdown-header-face-4 ((t (:inherit org-level-4))))
  '(markdown-header-face-5 ((t (:inherit org-level-5))))
  '(markdown-header-face-6 ((t (:inherit org-level-6))))
  '(markdown-pre-face ((t (:foreground "dark sea green"))))
