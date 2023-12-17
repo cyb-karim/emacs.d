@@ -118,6 +118,15 @@
 
   ;; emacs doesn't have this set by default for some reason...
   (setq xref-auto-jump-to-first-xref 'show)
+
+  ;; I like to indent most files on save like programming
+  ;; languages. This is used by conf file modes mostly.
+  (defun my/indent-buffer ()
+    "Indent the currently visited buffer."
+    (interactive)
+    (save-excursion
+      (indent-region (point-min) (point-max))))
+
 #+end_src
 
 * State Management/File Locations
@@ -640,8 +649,14 @@ https://github.com/python-lsp/python-lsp-black
 * LSP
 This requires you install the language servers, don't know why they can't all be automatically installed
 #+begin_src shell
-# python requires you have run this inside and outside your venv
-pip install python-language-server[all]
+  # python requires you have run this inside and outside your venv
+  pip install python-language-server[all]
+
+  # typescript server can't be automatically installed
+  npm install -g typescript typescript-language-server
+
+  npm install -g eslint eslint-config-prettier eslint-plugin-react
+
 #+end_src
 
 #+begin_src emacs-lisp
@@ -791,6 +806,23 @@ pip install python-language-server[all]
 * Config files
 #+begin_src emacs-lisp
   (add-to-list 'auto-mode-alist '("\\.env\\'" . conf-mode))
+#+end_src
+* Nginx
+#+begin_src emacs-lisp
+  (use-package nginx-mode
+    :ensure t
+    :mode ("\\.nginx\\'"
+           "/nginx/sites-\\(?:available\\|enabled\\)/"
+           "\\.*nginx\\.conf\\'")
+    :hook (nginx-mode . (lambda ()
+                          (add-hook 'before-save-hook 'my/indent-buffer nil 'local))))
+
+  (use-package company-nginx
+    :ensure t
+    :after (nginx-mode company)
+    :config
+    (add-to-list 'company-backends 'company-nginx))
+
 #+end_src
 * Ledger
 
