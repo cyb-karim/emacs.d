@@ -8,8 +8,10 @@
 #+end_src
 * init.el dev helpers
 #+PROPERTY: header-args:emacs-lisp :tangle init.el
+
+These functions are useful when iterating over some complicated configs
 #+begin_src emacs-lisp
-;; dev helper functions
+
 (defun my/reload-init-file ()
   "Reload the Emacs init file and the custom file."
   (interactive)
@@ -43,6 +45,16 @@
 
   (with-eval-after-load 'org
     (define-key org-mode-map (kbd "C-c C-x C-s") 'my/org-insert-or-wrap-src-block))
+
+(defun my/remove-auto-mode ()
+  "Remove all file associations for a selected mode from `auto-mode-alist`."
+  (interactive)
+  (let ((mode-set (seq-uniq (mapcar 'cdr (seq-filter (lambda (item) (symbolp (cdr item))) auto-mode-alist))))
+        selected-mode)
+    (setq selected-mode (intern (completing-read "Select mode to remove: " (mapcar 'symbol-name mode-set) nil t)))
+    (setq auto-mode-alist (seq-remove (lambda (item) (eq (cdr item) selected-mode)) auto-mode-alist))
+    (message "Removed all associations for %s mode" (symbol-name selected-mode))))
+
 #+end_src
 
 * Basic Global Settings
@@ -823,6 +835,11 @@ This requires you install the language servers, don't know why they can't all be
     :config
     (add-to-list 'company-backends 'company-nginx))
 
+#+end_src
+* Dockerfiles
+#+begin_src emacs-lisp
+;; anything that starts with "Dockerfile" is a dockerfile...
+(add-to-list 'auto-mode-alist '("Dockerfile.*\\'" . dockerfile-mode))
 #+end_src
 * Ledger
 
