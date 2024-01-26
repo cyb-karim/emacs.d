@@ -84,6 +84,12 @@ These functions are useful when iterating over some complicated configs
   (define-key global-map (kbd "C-+") 'text-scale-increase)
   (define-key global-map (kbd "C--") 'text-scale-decrease)
 
+  ;; Window navigation
+  (global-set-key (kbd "C-<left>")  'windmove-left)
+  (global-set-key (kbd "C-<right>") 'windmove-right)
+  (global-set-key (kbd "C-<up>")    'windmove-up)
+  (global-set-key (kbd "C-<down>")  'windmove-down)
+
   ;; Transparently open compressed files
   (auto-compression-mode t)
 
@@ -185,7 +191,6 @@ These functions are useful when iterating over some complicated configs
 #+end_src
 
 * Setup Package/Use Package
-
 #+begin_src emacs-lisp
     (require 'package)
 
@@ -725,6 +730,8 @@ This requires you install the language servers, don't know why they can't all be
   :bind ("C-c C-u" . string-inflection-all-cycle)
   :hook (python-mode . (lambda ()
                          (local-set-key (kbd "C-c C-u") 'string-inflection-python-style-cycle)))
+        (web-mode . (lambda ()
+                         (local-set-key (kbd "C-c C-u") 'string-inflection-java-style-cycle)))
         (js2-mode . (lambda ()
                          (local-set-key (kbd "C-c C-u") 'string-inflection-java-style-cycle))))
 
@@ -815,6 +822,20 @@ This requires you install the language servers, don't know why they can't all be
   (add-hook 'yaml-mode-hook #'flycheck-mode))
 #+end_src
 
+* CSV Mode
+#+begin_src emacs-lisp
+(use-package csv-mode
+  :ensure t
+  :mode ("\\.csv\\'")
+  :hook (csv-mode . (lambda ()
+                      ;; Custom settings for CSV mode
+                      (setq csv-separators '("," ";" "|" " "))
+                      ))
+  :config
+  ;; config here
+)
+#+end_src
+
 * Config files
 #+begin_src emacs-lisp
   (add-to-list 'auto-mode-alist '("\\.env\\'" . conf-mode))
@@ -868,6 +889,11 @@ This requires you install the language servers, don't know why they can't all be
 (add-to-list 'auto-mode-alist '("Vagrantfile" . ruby-mode))
 #+end_src
 
+* GPTel
+#+begin_src emacs-lisp
+(use-package gptel)
+
+#+end_src
 * Mac
 #+begin_src emacs-lisp
   ;; In a world where I am forced to use osx as my device driver...
