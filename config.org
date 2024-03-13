@@ -455,6 +455,25 @@ These functions are useful when iterating over some complicated configs
   (yas-global-mode 1))
 #+end_src
 
+* Hide/Show Minor Mode
+#+begin_src emacs-lisp
+;; Ensure hideshow is loaded
+(require 'hideshow)
+
+;; Define a function to enable hs-minor-mode and set up the keybinding
+(defun my/enable-hs-minor-mode ()
+ "Enable hs-minor-mode and set up the Ctrl-C Tab keybinding."
+ (hs-minor-mode 1)
+ (local-set-key (kbd "C-c TAB") 'my/toggle-hs-block))
+
+;; Define a function to toggle blocks using hs-show-block and hs-hide-block
+(defun my/toggle-hs-block ()
+ "Toggle visibility of the current block."
+ (interactive)
+ (if (hs-already-hidden-p)
+      (hs-show-block)
+    (hs-hide-block)))
+#+end_src
 * Python
 ** Functions to setup paths
 #+begin_src emacs-lisp
@@ -544,7 +563,10 @@ These functions are useful when iterating over some complicated configs
   (flycheck-select-checker 'python-flake8)
 
   ;; Enable automatic formatting on save using Black and Isort
-  (add-hook 'before-save-hook 'my/python-format-buffer nil t))
+  (add-hook 'before-save-hook 'my/python-format-buffer nil t)
+
+  ;; enable hideshow minor mode
+  (my/enable-hs-minor-mode))
 
 (add-hook 'python-mode-hook 'my/setup-python)
 #+end_src
@@ -637,6 +659,7 @@ https://github.com/python-lsp/python-lsp-black
     (flymake-mode-off)
     (setq tab-width 2)
     (my/find-and-set-node-version)
+    (my/enable-hs-minor-mode)
     (prettier-js-mode))
 
   (dolist (mode-hook '(js2-mode-hook js2-jsx-mode-hook web-mode-hook))
