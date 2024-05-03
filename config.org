@@ -218,6 +218,9 @@ These functions are useful when iterating over some complicated configs
   ;; Adjust the level of indentation (optional, set as per your preference)
   (setq org-indent-indentation-per-level 2)
 
+  ;; In src blocks, don't indent.
+  (setq org-edit-src-content-indentation 0)
+
   ;; tree visibility niceties
   (setq org-startup-indented t)
 
@@ -699,6 +702,7 @@ This requires you install the language servers, don't know why they can't all be
   # typescript server can't be automatically installed
   npm install -g typescript typescript-language-server
 
+  # eslint
   npm install -g eslint eslint-config-prettier eslint-plugin-react
 
 #+end_src
