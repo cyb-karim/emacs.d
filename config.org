@@ -675,22 +675,22 @@ https://github.com/python-lsp/python-lsp-black
     :mode (("\\.cs\\'" . csharp-mode))
     :ensure t)
 
-  (use-package omnisharp
-    :ensure t
-    :after csharp-mode
-    :config
-    ;; (setq omnisharp-expected-server-version "1.32.8")
-    ;;(setq omnisharp-expected-server-version "1.32.0") ; https://github.com/OmniSharp/omnisharp-vscode/issues/1450#issuecomment-432516876
-    ;;(let ((dotnet-version (string-trim (shell-command-to-string "dotnet --version"))))
-    ;;  ;; https://github.com/OmniSharp/omnisharp-emacs/issues/459#issuecomment-452656947
-    ;;  (setenv "MSBuildSDKsPath" (format "/usr/share/dotnet/sdk/%s/Sdks" dotnet-version)))
-    (setq lsp-csharp-server-path "~/.emacs.d/.cache/lsp/omnisharp-roslyn/latest/OmniSharp")
-    (define-key omnisharp-mode-map (kbd "M-.") #'omnisharp-go-to-definition)
-    (eval-after-load 'company '(add-to-list 'company-backends 'company-omnisharp))
-    (add-hook 'csharp-mode-hook #'company-mode)
-    (add-hook 'csharp-mode-hook #'flycheck-mode)
-    (add-hook 'csharp-mode-hook #'omnisharp-mode)
-    (setq omnisharp-completing-read-function #'ivy-completing-read))
+;;  (use-package omnisharp
+;;    :ensure t
+;;    :after csharp-mode
+;;    :config
+;;    ;; (setq omnisharp-expected-server-version "1.32.8")
+;;    ;;(setq omnisharp-expected-server-version "1.32.0") ; https://github.com/OmniSharp/omnisharp-vscode/issues/1450#issuecomment-432516876
+;;    ;;(let ((dotnet-version (string-trim (shell-command-to-string "dotnet --version"))))
+;;    ;;  ;; https://github.com/OmniSharp/omnisharp-emacs/issues/459#issuecomment-452656947
+;;    ;;  (setenv "MSBuildSDKsPath" (format "/usr/share/dotnet/sdk/%s/Sdks" dotnet-version)))
+;;    (setq lsp-csharp-server-path "~/.emacs.d/.cache/lsp/omnisharp-roslyn/latest/OmniSharp")
+;;    (define-key omnisharp-mode-map (kbd "M-.") #'omnisharp-go-to-definition)
+;;    (eval-after-load 'company '(add-to-list 'company-backends 'company-omnisharp))
+;;    (add-hook 'csharp-mode-hook #'company-mode)
+;;    (add-hook 'csharp-mode-hook #'flycheck-mode)
+;;    (add-hook 'csharp-mode-hook #'omnisharp-mode)
+;;    (setq omnisharp-completing-read-function #'ivy-completing-read))
 #+end_src
 
 * LSP
