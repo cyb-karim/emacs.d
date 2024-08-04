@@ -903,7 +903,7 @@ This requires you install the language servers, don't know why they can't all be
   (add-to-list 'auto-mode-alist '("\\.lgr$" . ledger-mode))
   (add-to-list 'auto-mode-alist '("\\.txs$" . ledger-mode))
   (add-to-list 'auto-mode-alist '("\\.ledger$" . ledger-mode))
-  (setq ledger-binary-path "/usr/local/bin/ledger"))
+  (setq ledger-binary-path "/usr/bin/ledger"))
 #+end_src
 
 * Ruby
