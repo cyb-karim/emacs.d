@@ -352,7 +352,7 @@ These functions are useful when iterating over some complicated configs
   (setq magit-highlight-whitespace nil)
   (setq magit-highlight-trailing-whitespace nil)
   (setq magit-highlight-indentation nil)
-  (setq magit-diff-refine-hunk nil)
+  (setq magit-save-repository-buffers 'dontask)
   (global-set-key (kbd "C-x g") 'magit-status))
 
 (defun generate-github-link ()
