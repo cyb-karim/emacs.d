@@ -721,7 +721,6 @@ This requires you install the language servers, don't know why they can't all be
     (add-to-list 'lsp-enabled-clients 'pylsp)
     (add-to-list 'lsp-enabled-clients 'ts-ls)
     (add-to-list 'lsp-enabled-clients 'eslint)
-    (add-to-list 'lsp-enabled-clients 'omnisharp)
 
     ;; agnostic settings
     (lsp-enable-which-key-integration t)
