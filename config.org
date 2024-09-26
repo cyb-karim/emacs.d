@@ -212,122 +212,123 @@ These functions are useful when iterating over some complicated configs
 
 * Org Mode
 #+begin_src emacs-lisp
-  ;; Ensure Org mode is properly indented
-  (setq org-startup-indented t)
+;; Ensure Org mode is properly indented
+(setq org-startup-indented t)
 
-  ;; Adjust the level of indentation (optional, set as per your preference)
-  (setq org-indent-indentation-per-level 2)
+;; Adjust the level of indentation (optional, set as per your preference)
+(setq org-indent-indentation-per-level 2)
 
-  ;; In src blocks, don't indent.
-  (setq org-edit-src-content-indentation 0)
+;; In src blocks, don't indent.
+(setq org-edit-src-content-indentation 0)
 
-  ;; tree visibility niceties
-  (setq org-startup-indented t)
+;; tree visibility niceties
+(setq org-startup-indented t)
 
-  ;; enable native syntax highlighting for source code blocks
-  (setq org-src-fontify-natively t)
+;; enable native syntax highlighting for source code blocks
+(setq org-src-fontify-natively t)
 
-  ;; log time completed when moving todo to DONE
-  (setq org-log-done 'time)
+;; log time completed when moving todo to DONE
+(setq org-log-done 'time)
 
-  ;; don't accidentally edit when not showing text
-  (setq org-catch-invisible-edits 'show)
+;; don't accidentally edit when not showing text
+(setq org-catch-invisible-edits 'show)
 
-  ;; auto-save org files after some time so that I can switch between
-  ;; devices without dataloss/conflicts
-  (add-hook 'auto-save-hook 'org-save-all-org-buffers)
+;; auto-save org files after some time so that I can switch between
+;; devices without dataloss/conflicts
+(add-hook 'auto-save-hook 'org-save-all-org-buffers)
 
-  ;; babel languages
-  (org-babel-do-load-languages
-   'org-babel-load-languages
-   '((emacs-lisp . t) (ledger . t) (dot . t) (sql . t) (sql . t) (python . t) (js . t) (css . t) (shell . t) (sass . t) (org . t)))
+;; babel languages
+(org-babel-do-load-languages
+ 'org-babel-load-languages
+ '((emacs-lisp . t) (dot . t) (sql . t) (sql . t) (python . t) (js . t) (css . t) (shell . t) (sass . t) (org . t)))
 
-  ;; keywords
-  (setq org-todo-keywords '((sequence "TODO(t)" "IN-PROGRESS(i)" "PAUSED(p)" "WAITING(w)" "FINALIZE(f)" "|" "DONE(d)" "MISSED(m)" "CANCELLED(c)")
-                            (sequence "NOTE(n)" "|" "ARCHIVED(a)" )))
-  (setq org-todo-keyword-faces
-        '(("TODO" :foreground "tomato" :weight bold)
-          ("PAUSED" :foreground "tomato" :weight bold)
-          ("IN-PROGRESS" :foreground "#009900" :weight bold)
-          ("FINALIZE" :foreground "yellow")
-          ("WAITING" :foreground "yellow")
-          ("DONE" :foreground "#6aa84f")
-          ("MISSED" :foreground "#6aa84f")
-          ("CANCELLED" :foreground "#6aa84f")
-          ("ARCHIVED" :foreground "#6aa84f")
-          ("NOTE" :foreground "orange")))
+;; keywords
+(setq org-todo-keywords '((sequence "TODO(t)" "IN-PROGRESS(i)" "PAUSED(p)" "WAITING(w)" "FINALIZE(f)" "|" "DONE(d)" "MISSED(m)" "CANCELLED(c)")
+                          (sequence "NOTE(n)" "|" "ARCHIVED(a)" )))
+(setq org-todo-keyword-faces
+      '(("TODO" :foreground "tomato" :weight bold)
+        ("PAUSED" :foreground "tomato" :weight bold)
+        ("IN-PROGRESS" :foreground "#009900" :weight bold)
+        ("FINALIZE" :foreground "yellow")
+        ("WAITING" :foreground "yellow")
+        ("DONE" :foreground "#6aa84f")
+        ("MISSED" :foreground "#6aa84f")
+        ("CANCELLED" :foreground "#6aa84f")
+        ("ARCHIVED" :foreground "#6aa84f")
+        ("NOTE" :foreground "orange")))
 
 
-  ;; key bindings
-  (defun my/org-back-to-indentation ()
-    "Move point to the first non-whitespace & non-headline asterisk character on this line."
-    (interactive "^")
-    (if org-special-ctrl-a/e
-        (org-beginning-of-line 1)
-      (beginning-of-line 1))
-    (skip-syntax-forward " _" (line-end-position))
-    ;; Move back over chars that have whitespace syntax but have the p flag.
-    (backward-prefix-chars))
+;; key bindings
+(defun my/org-back-to-indentation ()
+  "Move point to the first non-whitespace & non-headline asterisk character on this line."
+  (interactive "^")
+  (if org-special-ctrl-a/e
+      (org-beginning-of-line 1)
+    (beginning-of-line 1))
+  (skip-syntax-forward " _" (line-end-position))
+  ;; Move back over chars that have whitespace syntax but have the p flag.
+  (backward-prefix-chars))
 
-  (defun my/set-org-mode-bindings ()
-    "Keybindings for Org mode."
-    ;; Uncomment the next line if you have a specific binding for 'org-insert-heading-respect-content
-    ;; (local-set-key (kbd "ESC-M-<RET>") 'org-insert-heading-respect-content)
-    ;; make ctrl-a org-aware
-    (setq org-special-ctrl-a/e t)
-    (local-set-key (kbd "M-m") 'my/org-back-to-indentation))
+(defun my/set-org-mode-bindings ()
+  "Keybindings for Org mode."
+  ;; Uncomment the next line if you have a specific binding for 'org-insert-heading-respect-content
+  ;; (local-set-key (kbd "ESC-M-<RET>") 'org-insert-heading-respect-content)
+  ;; make ctrl-a org-aware
+  (setq org-special-ctrl-a/e t)
+  (local-set-key (kbd "M-m") 'my/org-back-to-indentation))
 
-  (defun my/set-org-src-mode-bindings ()
-    "Keybindings for `org-src-mode'."
-    (local-set-key (kbd "M-<up>") 'my/move-line-up)
-    (local-set-key (kbd "M-<down>") 'my/move-line-down))
+(defun my/set-org-src-mode-bindings ()
+  "Keybindings for `org-src-mode'."
+  (local-set-key (kbd "M-<up>") 'my/move-line-up)
+  (local-set-key (kbd "M-<down>") 'my/move-line-down)
+  (local-set-key (kbd "C-c C-c") 'org-edit-src-exit))
 
-  (with-eval-after-load 'org
-    (add-hook 'org-mode-hook #'visual-line-mode)
-    (add-hook 'org-mode-hook 'my/set-org-mode-bindings)
-    (add-hook 'org-src-mode-hook 'my/set-org-src-mode-bindings))
+(with-eval-after-load 'org
+  (add-hook 'org-mode-hook #'visual-line-mode)
+  (add-hook 'org-mode-hook 'my/set-org-mode-bindings)
+  (add-hook 'org-src-mode-hook 'my/set-org-src-mode-bindings))
 
-      ;;;;; org-mode has some keybindings I disagree with
-      ;;;(remove-hook 'org-metadown-hook #'org-babel-pop-to-session-maybe)
-      ;;;(remove-hook 'org-metaup-hook #'org-babel-load-in-session-maybe)
-      ;;;(with-eval-after-load 'org-src
-      ;;;  (define-key org-src-mode-map (kbd "M-<up>") 'my/move-line-up)
-      ;;;  (define-key org-src-mode-map (kbd "M-<down>") 'my/move-line-down))
+    ;;;;; org-mode has some keybindings I disagree with
+    ;;;(remove-hook 'org-metadown-hook #'org-babel-pop-to-session-maybe)
+    ;;;(remove-hook 'org-metaup-hook #'org-babel-load-in-session-maybe)
+    ;;;(with-eval-after-load 'org-src
+    ;;;  (define-key org-src-mode-map (kbd "M-<up>") 'my/move-line-up)
+    ;;;  (define-key org-src-mode-map (kbd "M-<down>") 'my/move-line-down))
 
-  ;; helper packages for html exporting
-  (use-package htmlize
-    :ensure t)
+;; helper packages for html exporting
+(use-package htmlize
+  :ensure t)
 
-  (use-package ox-html
-    :ensure org  ; Ensure ox-html is installed as part of the org package
-    :config
-    ;; Basic setup
-    (setq org-html-doctype "html5"                  ; Use HTML5 doctype
-          org-html-html5-fancy t                    ; Enable HTML5 features
-          org-html-validation-link nil              ; Disable validation link
-          org-html-head-include-scripts nil         ; Do not include default scripts
-          org-html-head-include-default-style nil)  ; Do not include default CSS
+(use-package ox-html
+  :ensure org  ; Ensure ox-html is installed as part of the org package
+  :config
+  ;; Basic setup
+  (setq org-html-doctype "html5"                  ; Use HTML5 doctype
+        org-html-html5-fancy t                    ; Enable HTML5 features
+        org-html-validation-link nil              ; Disable validation link
+        org-html-head-include-scripts nil         ; Do not include default scripts
+        org-html-head-include-default-style nil)  ; Do not include default CSS
 
-    ;; Custom CSS and JavaScript
-    (setq org-html-head "<link rel=\"stylesheet\" type=\"text/css\" href=\"style.css\" />")
-    ;; (setq org-html-scripts "<script src=\"scripts.js\"></script>")
+  ;; Custom CSS and JavaScript
+  (setq org-html-head "<link rel=\"stylesheet\" type=\"text/css\" href=\"style.css\" />")
+  ;; (setq org-html-scripts "<script src=\"scripts.js\"></script>")
 
-    ;; Export settings
-    (setq org-export-with-html-style nil       ; Do not include default HTML styles
-          org-export-with-section-numbers 0    ; Do not number sections
-          org-export-with-toc nil              ; Do not generate a table of contents
-          org-export-with-author nil           ; Do not include the author's name
-          org-export-with-creator nil          ; Do not include the Org/Emacs creator info
-          org-export-with-sub-superscripts '{} ; Use '{}' as super-/subscript markers
-          org-html-self-link-headlines nil     ; Create anchors for headlines
-          org-html-preamble nil                ; Disable preamble by default
-          org-html-postamble nil)              ; Disable the HTML postamble
+  ;; Export settings
+  (setq org-export-with-html-style nil       ; Do not include default HTML styles
+        org-export-with-section-numbers 0    ; Do not number sections
+        org-export-with-toc nil              ; Do not generate a table of contents
+        org-export-with-author nil           ; Do not include the author's name
+        org-export-with-creator nil          ; Do not include the Org/Emacs creator info
+        org-export-with-sub-superscripts '{} ; Use '{}' as super-/subscript markers
+        org-html-self-link-headlines nil     ; Create anchors for headlines
+        org-html-preamble nil                ; Disable preamble by default
+        org-html-postamble nil)              ; Disable the HTML postamble
 
-    ;; Set to 't' to enable syntax highlighting code in exported HTML
-    (setq org-html-htmlize-output-type 'inline-css)
+  ;; Set to 't' to enable syntax highlighting code in exported HTML
+  (setq org-html-htmlize-output-type 'inline-css)
 
-    ;; Ensure proper loading of ox-html
-    :after org)
+  ;; Ensure proper loading of ox-html
+  :after org)
 #+end_src
 * Key Bindings Pop-up
 ~which-key~ provides pop-up showing available key bindings
