@@ -478,6 +478,12 @@ These functions are useful when iterating over some complicated configs
       (hs-show-block)
     (hs-hide-block)))
 #+end_src
+* ediff tweaks
+Set ediff to use horizontal windows always
+#+begin_src emacs-lisp
+(setq ediff-split-window-function 'split-window-horizontally)
+(setq ediff-window-setup-function 'ediff-setup-windows-plain)
+#+end_src
 * Python
 ** Functions to setup paths
 #+begin_src emacs-lisp
