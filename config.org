@@ -828,22 +828,53 @@ This requires you install the language servers, don't know why they can't all be
 * JSON
 
 #+begin_src emacs-lisp
-  (use-package json-reformat
-    :ensure t)
-  (use-package json-snatcher
-    :ensure t)
-  (use-package json-mode
-    :ensure t)
+(use-package json-reformat
+  :ensure t)
+(use-package json-snatcher
+  :ensure t)
+(use-package json-mode
+  :ensure t)
 
-  (add-hook 'json-mode-hook
-            (lambda ()
-              (make-local-variable 'js-indent-level)
-              (setq js-indent-level 2)
-              (setq indent-tabs-mode nil)
-              (prettier-js-mode)
-              ;; Add a save hook to format with Prettier
-              (add-hook 'before-save-hook 'prettier-js nil t)))
+(add-hook 'json-mode-hook
+          (lambda ()
+            (make-local-variable 'js-indent-level)
+            (setq js-indent-level 2)
+            (setq json-reformat:indent-width 2)
+            (setq indent-tabs-mode nil)
+            (prettier-js-mode)
+            ;; add a hook for HideShow mode
+            (add-hook 'json-mode-hook 'hs-minor-mode)
+            ;; Add a save hook to format with Prettier
+            (add-hook 'before-save-hook 'prettier-js nil t)))
 
+(defun json-unescape-region (start end)
+  "Unescape JSON in region between START and END."
+  (interactive "r")
+  (save-excursion
+    (save-restriction
+      (narrow-to-region start end)
+      (goto-char (point-min))
+      (while (search-forward "\\\"" nil t)
+        (replace-match "\"" nil t))
+      (goto-char (point-min))
+      (while (search-forward "\\n" nil t)
+        (replace-match "\n" nil t))
+      (goto-char (point-min))
+      (while (search-forward "\\/" nil t)
+        (replace-match "/" nil t))
+      (goto-char (point-min))
+      (while (search-forward "\\t" nil t)
+        (replace-match "\t" nil t)))))
+
+(defun json-unescape-buffer ()
+  "Unescape JSON in entire buffer."
+  (interactive)
+  (json-unescape-region (point-min) (point-max)))
+
+(defun json-reformat-buffer ()
+  "Reformat JSON in entire buffer."
+  (interactive)
+  (json-reformat-region (point-min) (point-max)))
 #+end_src
 
 * YAML
