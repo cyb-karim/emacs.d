@@ -330,6 +330,10 @@ These functions are useful when iterating over some complicated configs
   ;; Ensure proper loading of ox-html
   :after org)
 #+end_src
+* Directory Listings
+#+begin_src emacs-lisp
+(setq dired-listing-switches "-lav --group-directories-first")
+#+end_src
 * Key Bindings Pop-up
 ~which-key~ provides pop-up showing available key bindings
 #+begin_src emacs-lisp
@@ -941,6 +945,17 @@ This requires you install the language servers, don't know why they can't all be
   (add-to-list 'auto-mode-alist '("\\.txs$" . ledger-mode))
   (add-to-list 'auto-mode-alist '("\\.ledger$" . ledger-mode))
   (setq ledger-binary-path "/usr/bin/ledger"))
+#+end_src
+* Markdown
+#+begin_src emacs-lisp
+;; enable editing of code blocks in indirect buffers using C-c ’
+(use-package edit-indirect
+  :ensure t)
+
+(use-package markdown-mode
+  :ensure t
+  :mode ("README\\.md\\'" . gfm-mode)
+  :init (setq markdown-command "multimarkdown"))
 #+end_src
 
 * Ruby
