@@ -177,7 +177,7 @@ These functions are useful when iterating over some complicated configs
 ;; List of authentication sources.
 ;; Each entry is the authentication type with optional properties.
 ;; Entries are tried in the order in which they appear.
-(setq auth-sources (concat my/emacs-state-directory "auth-sources"))
+(setq auth-sources `(,(concat my/emacs-state-directory "auth-sources")))
 
 ;; transient is built in, and used by other packages
 (setq transient-history-file (expand-file-name "transient/history.el" my/emacs-state-directory))
@@ -949,7 +949,7 @@ debug with:
   (add-to-list 'auto-mode-alist '("\\.lgr$" . ledger-mode))
   (add-to-list 'auto-mode-alist '("\\.txs$" . ledger-mode))
   (add-to-list 'auto-mode-alist '("\\.ledger$" . ledger-mode))
-  (setq ledger-binary-path "/usr/bin/ledger"))
+  (setq ledger-binary-path "/usr/local/bin/ledger"))
 #+end_src
 * Markdown
 #+begin_src emacs-lisp
