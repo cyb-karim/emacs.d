@@ -22,7 +22,8 @@
  '(python-shell-interpreter "python3")
  '(ripgrep-arguments '("--no-ignore"))
  '(safe-local-variable-values
-   '((eval setq exec-path
+   '((eval setq-local lsp-file-watch-threshold 1000)
+     (eval setq exec-path
            (cons
             (concat
              (getenv "HOME")
