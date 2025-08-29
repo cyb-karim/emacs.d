@@ -243,7 +243,7 @@ These functions are useful when iterating over some complicated configs
  '((emacs-lisp . t) (dot . t) (sql . t) (sql . t) (python . t) (js . t) (css . t) (shell . t) (sass . t) (org . t) (rust . t)))
 
 ;; keywords
-(setq org-todo-keywords '((sequence "TODO(t)" "IN-PROGRESS(i)" "PAUSED(p)" "WAITING(w)" "FINALIZE(f)" "|" "DONE(d)" "MISSED(m)" "CANCELLED(c)")
+(setq org-todo-keywords '((sequence "TODO(t)" "IN-PROGRESS(i)" "PAUSED(p)" "WAITING(w)" "BLOCKED(b)" "FINALIZE(f)" "|" "DONE(d)" "MISSED(m)" "CANCELLED(c)")
                           (sequence "NOTE(n)" "|" "ARCHIVED(a)" )))
 (setq org-todo-keyword-faces
       '(("TODO" :foreground "tomato" :weight bold)
@@ -251,6 +251,7 @@ These functions are useful when iterating over some complicated configs
         ("IN-PROGRESS" :foreground "#009900" :weight bold)
         ("FINALIZE" :foreground "yellow")
         ("WAITING" :foreground "yellow")
+        ("BLOCKED" :foreground "yellow")
         ("DONE" :foreground "#6aa84f")
         ("MISSED" :foreground "#6aa84f")
         ("CANCELLED" :foreground "#6aa84f")
@@ -357,6 +358,7 @@ These functions are useful when iterating over some complicated configs
   (setq magit-highlight-trailing-whitespace nil)
   (setq magit-highlight-indentation nil)
   (setq magit-save-repository-buffers 'dontask)
+  (setq magit-process-connection-type 'pty)
   (global-set-key (kbd "C-x g") 'magit-status))
 
 (defun generate-github-link ()
