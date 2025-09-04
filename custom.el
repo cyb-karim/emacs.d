@@ -20,15 +20,19 @@
    '(ob-rust rust-mode rustic cargo poetry exec-path-from-shell edit-indirect gptel yasnippet yaml-mode htmlize csv-mode isortify sql-indent sqlind ob-sql-mode company-nginx nginx-mode python-black ivy-xref prescient hydra ivy ledger-mode json-mode json-snatcher json-reformat company-lsp dap-mode lsp-ui lsp-mode js2-mode web-mode prettier-js string-inflection dockerfile-mode which-key use-package-ensure-system-package rg magit ivy-prescient ivy-hydra counsel company-prescient))
  '(python-fill-docstring-style 'django)
  '(python-shell-interpreter "python3")
- '(ripgrep-arguments '("--no-ignore"))
  '(safe-local-variable-values
    '((eval setq-local lsp-file-watch-threshold 1000)
-     (eval setq exec-path
-           (cons
+     (eval unless (member
             (concat
              (getenv "HOME")
              "/.cargo/bin")
-            exec-path))
+            exec-path)
+           (setq exec-path
+                 (cons
+                  (concat
+                   (getenv "HOME")
+                   "/.cargo/bin")
+                  exec-path)))
      (eval setenv "PATH"
            (concat
             (getenv "HOME")
