@@ -12,3 +12,7 @@
 /var/
 /recentf
 /projectile-bookmarks.eld
+
+# More Emacs runtime junk
+/.emacs.desktop.lock
+/ac-comphist.dat
