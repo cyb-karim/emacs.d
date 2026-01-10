@@ -2,3 +2,13 @@
 /elpa/
 /init.el
 /state/
+
+# Emacs runtime junk
+/packages/
+/transient/
+/eln-cache/
+/url/
+/session.*
+/var/
+/recentf
+/projectile-bookmarks.eld
