@@ -16,3 +16,5 @@
 # More Emacs runtime junk
 /.emacs.desktop.lock
 /ac-comphist.dat
+local-installs/
+straight/
