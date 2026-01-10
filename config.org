@@ -736,6 +736,7 @@ debug with:
 (message "Rustc: %s" (executable-find "rustc"))
 (message "Cargo: %s" (executable-find "cargo"))
 (message "rustfmt: %s" (executable-find "rustfmt"))
+(message "rust analyzer: %s" (executable-find "rust-analyzer"))
 (message "PATH: %s" (getenv "PATH"))
 (message "%S" exec-path)
 
@@ -743,19 +744,14 @@ debug with:
 #+end_src
 
 #+begin_src emacs-lisp
-(defun my/lsp-rustic-init ()
-  (unless (lsp-workspaces)
-    (lsp-deferred)))
-
 (use-package rustic
   :ensure t
   :config
   (setq rustic-lsp-server 'rust-analyzer)
-  (setq rustic-format-on-save nil)                      ;; Keep rustic's formatter off
-  (setq lsp-rust-analyzer-rustfmt-enable t)             ;; Use rust-analyzer's formatter
-  (add-hook 'before-save-hook 'lsp-format-buffer nil t) ;; use lsp for format on save
+  (setq rustic-format-on-save nil)
+  (setq lsp-rust-analyzer-rustfmt-enable t)
   :hook (rustic-mode . (lambda ()
-                         (my/lsp-rustic-init)
+                         (lsp-deferred)  ;; Just this, nothing else
                          (add-hook 'before-save-hook #'lsp-format-buffer nil t)
                          (my/enable-hs-minor-mode))))
 (use-package cargo
