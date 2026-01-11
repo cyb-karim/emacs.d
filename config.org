@@ -744,6 +744,13 @@ debug with:
 #+end_src
 
 #+begin_src emacs-lisp
+
+;; Ensure cargo binaries are available
+(let ((cargo-bin (expand-file-name "~/.cargo/bin")))
+  (when (file-directory-p cargo-bin)
+    (add-to-list 'exec-path cargo-bin)
+    (setenv "PATH" (concat cargo-bin ":" (getenv "PATH")))))
+
 (use-package rustic
   :ensure t
   :config
