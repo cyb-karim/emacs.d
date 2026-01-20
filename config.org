@@ -210,6 +210,26 @@ These functions are useful when iterating over some complicated configs
     (use-package use-package-ensure-system-package)
 #+end_src
 
+* Exec Path From Shell
+Ensure GUI Emacs and daemon mode inherit PATH and other env vars from shell
+#+begin_src emacs-lisp
+(use-package exec-path-from-shell
+  :config
+  (when (or (daemonp) (memq window-system '(mac ns x)))
+    (exec-path-from-shell-initialize)))
+#+end_src
+
+* Emacs Server
+Start the Emacs server for emacsclient usage
+#+begin_src emacs-lisp
+;; Start Emacs server for emacsclient
+(use-package server
+  :ensure nil  ; built-in package
+  :config
+  (unless (server-running-p)
+    (server-start)))
+#+end_src
+
 * Org Mode
 #+begin_src emacs-lisp
 ;; Ensure Org mode is properly indented
@@ -720,6 +740,23 @@ npm install -g eslint eslint-config-prettier eslint-plugin-react
   :commands lsp-ui-mode)
 #+end_src
 
+* Bash/Shell Script
+Install bash-language-server via npm:
+#+begin_src shell
+npm install -g bash-language-server
+#+end_src
+
+#+begin_src emacs-lisp
+;; Bash/shell script LSP
+(with-eval-after-load 'sh-script
+  (add-to-list 'lsp-enabled-clients 'bash-ls))
+
+(add-hook 'sh-mode-hook
+          (lambda ()
+            (lsp-deferred)
+            (my/enable-hs-minor-mode)))
+#+end_src
+
 * Rust
 Install Rust and rust-analyzer in your shell. NOTE it is up to you to keep this in sync with asdf.
 #+begin_src shell
@@ -744,12 +781,6 @@ debug with:
 #+end_src
 
 #+begin_src emacs-lisp
-
-;; Ensure cargo binaries are available
-(let ((cargo-bin (expand-file-name "~/.cargo/bin")))
-  (when (file-directory-p cargo-bin)
-    (add-to-list 'exec-path cargo-bin)
-    (setenv "PATH" (concat cargo-bin ":" (getenv "PATH")))))
 
 (use-package rustic
   :ensure t

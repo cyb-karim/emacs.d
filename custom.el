@@ -21,8 +21,15 @@
  '(python-fill-docstring-style 'django)
  '(python-shell-interpreter "python3")
  '(safe-local-variable-values
-   '((eval setq-local lsp-file-watch-threshold 1000)
-     (eval unless (member
+   '((eval setq exec-path
+           (cons
+            (concat
+             (getenv "HOME")
+             "/.cargo/bin")
+            exec-path))
+     (eval setq-local lsp-file-watch-threshold 1000)
+     (eval unless
+           (member
             (concat
              (getenv "HOME")
              "/.cargo/bin")
